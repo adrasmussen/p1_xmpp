@@ -36,7 +36,7 @@
 -type mech_state() :: term().
 -type sasl_module() :: xmpp_sasl_anonymous | xmpp_sasl_digest |
 		       xmpp_sasl_oauth | xmpp_sasl_plain |
-		       xmpp_sasl_scram.
+		       xmpp_sasl_scram | xmpp_sasl_gssapi.
 -type sasl_state() :: #sasl_state{}.
 -type sasl_property() :: {username, binary()} |
 			 {authzid, binary()} |
@@ -52,6 +52,7 @@
 			xmpp_sasl_plain:error_reason() |
 			xmpp_sasl_scram:error_reason() |
 			xmpp_sasl_fast:error_reason() |
+			xmpp_sasl_gssapi:error_reason() |
 			unsupported_mechanism | nodeprep_failed |
 			empty_username | aborted.
 
@@ -90,7 +91,7 @@ listmech() ->
      <<"SCRAM-SHA-512-PLUS">>, <<"SCRAM-SHA-512">>,
      <<"SCRAM-SHA-256-PLUS">>, <<"SCRAM-SHA-256">>,
      <<"SCRAM-SHA-1-PLUS">>, <<"SCRAM-SHA-1">>,
-     <<"X-OAUTH2">>].
+     <<"X-OAUTH2">>, <<"GSSAPI">>].
 
 -spec server_new(binary(),
 		 get_password_fun(),
@@ -170,5 +171,6 @@ get_mod(<<"HT-SHA-256-NONE">>) -> xmpp_sasl_fast;
 get_mod(<<"HT-SHA-256-ENDP">>) -> xmpp_sasl_fast;
 get_mod(<<"HT-SHA-256-UNIQ">>) -> xmpp_sasl_fast;
 get_mod(<<"HT-SHA-256-EXPR">>) -> xmpp_sasl_fast;
+get_mod(<<"GSSAPI">>) -> xmpp_sasl_gssapi;
 
 get_mod(_) -> undefined.

@@ -1103,6 +1103,13 @@ process_sasl2_request(#sasl2_authenticate{mechanism = Mech, initial_response = C
 		  end,
 	    process_sasl2_result(Res, State1#{sasl2_inline_els => SaslInline,
 					      sasl2_ua_id => UAId});
+	true when Mech == <<"GSSAPI">> ->
+		NoFun = fun () -> [] end,
+
+	    SASLState = xmpp_sasl:server_new(LServer, NoFun, NoFun, NoFun, undefined),
+	    CB = maps:get(sasl_channel_bindings, State1, none),
+	    Res = xmpp_sasl:server_start(SASLState, Mech, ClientIn, CB, Mechs, undefined),
+	    process_sasl2_result(Res, disable_sasl2(State1#{sasl_state => SASLState}));
 	true ->
 	    GetPW = get_password_fun_sasl2(Mech, State1),
 	    CheckPW = check_password_fun(Mech, State1),
