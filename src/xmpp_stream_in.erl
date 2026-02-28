@@ -1109,7 +1109,7 @@ process_sasl2_request(#sasl2_authenticate{mechanism = Mech, initial_response = C
 	    SASLState = xmpp_sasl:server_new(LServer, NoFun, NoFun, NoFun, undefined),
 	    CB = maps:get(sasl_channel_bindings, State1, none),
 	    Res = xmpp_sasl:server_start(SASLState, Mech, ClientIn, CB, Mechs, undefined),
-	    process_sasl2_result(Res, disable_sasl2(State1#{sasl_state => SASLState}));
+	    process_sasl2_result(Res, State1#{sasl_state => SASLState});
 	true ->
 	    GetPW = get_password_fun_sasl2(Mech, State1),
 	    CheckPW = check_password_fun(Mech, State1),
