@@ -59,10 +59,7 @@ format_error(sasl_unsupported_layer) ->
 mech_new(_Mech, _CB, _Mechs, _UAId, Host, _Callbacks) ->
     % this function cannot fail, so just explode if
     % we can't read our keytab data
-    %
-    % could instead save error and throw an error in mech_step
-    {ok, KeyTabData} = file:read_file("/etc/krb5.keytab"),
-    {ok, KeyTab} = krb_mit_keytab:parse(KeyTabData),
+    {ok, KeyTab} = krb_mit_keytab:file("/etc/krb5.keytab"),
 
     #state{lserver = Host, keytab = KeyTab, context = none, gss_done = false}.
 
@@ -78,7 +75,7 @@ mech_step(State, ClientIn) ->
 handle_auth(<<>>, #state{context = Ctx, gss_done = true} = State) ->
     % advertise no security (1:8), but the rfc demands
     % that is this be sent to the client encrypted
-    LayerMsg = <<1:8, 0:24>>,
+    LayerMsg = <<7, 1, 0, 0>>,
 
     case gss_krb5:wrap(LayerMsg, Ctx) of
         {ok, TokenOut} ->
@@ -100,7 +97,12 @@ handle_auth(TokenIn, #state{lserver = Lserver, context = Ctx, gss_done = true} =
     end;
 % set up the gss context and generate the first token
 handle_auth(TokenIn, #state{keytab = KeyTab, context = none} = State) ->
-    Opts = #{keytab => KeyTab},
+    % while gssapi does support channel bindings, xmpp doesn't
+    % appear to have a way to negotiate which binding before
+    % the client passes the first token, and in any case the
+    % kerberos tokens are already encrypted
+    Opts = #{keytab => KeyTab, chan_bindings => <<0:128>>},
+
     handle_gss_result(gss_krb5:accept(TokenIn, Opts), State);
 % most gssapi implementations should only need to do one step
 % (i.e. decrypt the AP_REQ) but we want to be exhaustive
