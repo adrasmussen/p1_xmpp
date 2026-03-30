@@ -23,7 +23,7 @@
 % TODO -- pick location for keytab/use kerlberos to get from local env
 %         better error handling for missing keytab/log lines for mech
 %% API
--export([mech_new/6, mech_step/2, format_error/1]).
+-export([mech_new/7, mech_step/2, format_error/1]).
 
 -record(state, {
     lserver :: binary(),
@@ -56,7 +56,7 @@ format_error(sasl_unwrap) ->
 format_error(sasl_unsupported_layer) ->
     {'not-authorized', <<"Client requested invalid SASL layer">>}.
 
-mech_new(_Mech, _CB, _Mechs, _UAId, Host, _Callbacks) ->
+mech_new(_Mech, _CB, _PD, _Mechs, _UAId, Host, _Callbacks) ->
     % this function cannot fail, so just explode if
     % we can't read our keytab data
     {ok, KeyTab} = krb_mit_keytab:file("/etc/krb5.keytab"),
